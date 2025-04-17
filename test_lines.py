@@ -39,19 +39,21 @@ def iter_all_chunks(read_stream, chunk_size=2**16):
             break
         yield b
 
-def count_newlines_sample(fname):
+def count_newlines(fname):
 
-    stat = os.stat(fname)
-    print(stat)
+    with open(fname, "rb", buffering=0) as stream:
+        count = sum(chunk.count(b"\n") for chunk in iter_all_chunks(stream))
+
+    return count
+        
+def count_newlines_sample(fname):
     
     n_samples = 5
     chunk_size = 2**16
     sample_length = 500
     
     total_bytes = os.path.getsize(fname)
-    print(total_bytes, total_bytes / (1024 * 1024))
     n_bytes_read = n_samples * chunk_size * sample_length
-    print(n_bytes_read / (1024 * 1024))
 
     if n_bytes_read > total_bytes:
         return count_newlines(fname)
@@ -67,12 +69,6 @@ def count_newlines_sample(fname):
         
     return answer
 
-def count_newlines(fname):
-
-    with open(fname, "rb", buffering=0) as stream:
-        count = sum(chunk.count(b"\n") for chunk in iter_all_chunks(stream))
-
-    return count
 
 def wc_l(fname):
     return int(subprocess.check_output(["wc", "-l", fname]).split()[0])
@@ -85,14 +81,17 @@ def make_file(filename, n_lines, line_size, final_newline=True):
         if final_newline:
             outfile.write("\n")
 
-# make_file('small-no.txt', 4200, 100, final_newline=False)
+for i in range(25, 27):
+    n_lines = 2**i
+    make_file(f'test-{n_lines:08d}.txt', n_lines, 10, final_newline=True)
 
+raise 'STOP'
 for filename in ['kk-no.txt', 'big-no.txt', 'small-no.txt']:
 
     for f in [wc_l, count_newlines, count_newlines_sample]:
         i = time.perf_counter()
         print(filename, f.__name__, f(filename))
         print(time.perf_counter() - i)
-
+    print()
 # for i in range(100):
 #     print(count_newlines_sample('big-no.txt'))
