@@ -1,17 +1,23 @@
 use anyhow::Result;
 use clap::Parser;
-use linecount::{EstimateOptions, count_lines_estimate, count_lines_exact};
+use linecount::{
+    EstimateOptions, SMALL_FILE_THRESHOLD, count_lines_estimate, count_lines_exact,
+    count_lines_exact_reader,
+};
+use std::io::{self};
 use std::path::PathBuf;
+use rand::SeedableRng;
+use rand::rngs::StdRng;
 
 #[derive(Parser, Debug)]
 #[command(
     name = "linecount",
     version,
-    about = "Count the number of lines in a file efficiently"
+    about = "Count the number of lines in a file or stdin efficiently"
 )]
 struct Args {
-    /// Path to the file
-    file: PathBuf,
+    /// File to read (use '-' or omit to read from stdin)
+    file: Option<PathBuf>,
 
     /// Force exact line counting
     #[arg(long, conflicts_with = "estimate")]
@@ -52,32 +58,51 @@ fn parse_bytes(src: &str) -> Result<usize, String> {
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    let file_size = std::fs::metadata(&args.file)?.len();
+
+    let use_stdin =
+        args.file.is_none() || args.file.as_deref() == Some(PathBuf::from("-").as_path());
+
+    if use_stdin {
+        if args.estimate {
+            eprintln!(
+                "Warning: wc --estimate is not supported for stdin. Falling back to exact count."
+            );
+        }
+
+        let stdin = io::stdin();
+        let mut handle = stdin.lock();
+        let count = count_lines_exact_reader(&mut handle)?;
+        println!("{count}");
+        return Ok(());
+    }
+
+    let path = args.file.unwrap();
+    let file_size = std::fs::metadata(&path)?.len();
 
     let mode = if args.exact {
         "exact"
     } else if args.estimate {
         "estimate"
-    } else if file_size < 1_000_000_000 {
+    } else if file_size < SMALL_FILE_THRESHOLD {
         "exact"
     } else {
         "estimate"
     };
 
     let count = match mode {
-        "exact" => count_lines_exact(&args.file)?,
+        "exact" => count_lines_exact(&path)?,
         "estimate" => {
             let opts = EstimateOptions {
                 chunk_size: args.chunk_size,
                 sample_length: args.sample_length,
                 num_samples: args.samples,
+		rng: StdRng::from_entropy(),
             };
-            count_lines_estimate(&args.file, opts)?
+            count_lines_estimate(&path, opts)?
         }
         _ => unreachable!(),
     };
 
     println!("{count}");
-
     Ok(())
 }

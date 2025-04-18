@@ -1,10 +1,10 @@
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use linecount::{EstimateOptions, count_lines_estimate, count_lines_exact};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use std::fs::{File, create_dir_all};
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
-use linecount::{EstimateOptions, count_lines_estimate, count_lines_exact};
 
 fn get_fixture_path() -> PathBuf {
     let path = Path::new("bench_data/lines_1g.txt");
@@ -43,13 +43,13 @@ fn benchmark_line_counts(c: &mut Criterion) {
     exact_group.finish();
 
     c.bench_function("count_lines_estimate (1G lines)", |b| {
-	let opts = EstimateOptions {
+        let opts = EstimateOptions {
             chunk_size: 1 << 16,
             sample_length: 500,
             num_samples: 5,
-	};
+        };
         b.iter(|| {
-	    let opts = opts.clone();
+            let opts = opts.clone();
             let result = count_lines_estimate(black_box(&path), opts).unwrap();
             black_box(result);
         });
