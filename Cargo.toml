@@ -1,6 +1,6 @@
 [package]
 name = "count-lines"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 authors = ["Mike Stringer <mike.stringer.internet@gmail.com>"]
 description = "Efficiently count lines in files or stdin with estimation for large files."
