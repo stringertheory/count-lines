@@ -127,3 +127,30 @@ fn estimate_mean_within_four_stddevs_of_exact() {
         exact
     );
 }
+
+#[test]
+fn test_estimate_is_deterministic_with_seed() {
+    let content = (0..10_000)
+        .map(|i| format!("line {}\n", i))
+        .collect::<String>();
+    let file = write_temp_file(&content);
+
+    let seed = 42;
+    let opts1 = EstimateOptions {
+        chunk_size: 1 << 14,
+        sample_length: 10,
+        num_samples: 3,
+        rng: StdRng::seed_from_u64(seed),
+    };
+    let opts2 = EstimateOptions {
+        chunk_size: 1 << 14,
+        sample_length: 10,
+        num_samples: 3,
+        rng: StdRng::seed_from_u64(seed),
+    };
+
+    let est1 = count_lines_estimate(file.path(), opts1).unwrap();
+    let est2 = count_lines_estimate(file.path(), opts2).unwrap();
+
+    assert_eq!(est1, est2, "Estimates with same seed should match");
+}

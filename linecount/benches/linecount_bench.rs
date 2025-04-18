@@ -47,7 +47,7 @@ fn benchmark_line_counts(c: &mut Criterion) {
             chunk_size: 1 << 16,
             sample_length: 500,
             num_samples: 5,
-	    rng: StdRng::from_entropy(),
+            rng: StdRng::from_entropy(),
         };
         b.iter(|| {
             let opts = opts.clone();

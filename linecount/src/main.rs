@@ -1,4 +1,5 @@
 use anyhow::Result;
+use byte_unit::Byte;
 use clap::Parser;
 use linecount::{
     EstimateOptions, SMALL_FILE_THRESHOLD, count_lines_estimate, count_lines_exact,
@@ -8,6 +9,7 @@ use rand::SeedableRng;
 use rand::rngs::StdRng;
 use std::io::{self};
 use std::path::PathBuf;
+use std::str::FromStr;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -27,8 +29,8 @@ struct Args {
     #[arg(long, conflicts_with = "exact")]
     estimate: bool,
 
-    /// Chunk size (e.g. 64KB, 1MB)
-    #[arg(long, default_value = "64KB", value_parser = parse_bytes)]
+    /// Chunk size (e.g. 64kB, 1MB, 2GB)
+    #[arg(long, default_value = "64kB", value_parser = parse_bytes)]
     chunk_size: usize,
 
     /// Number of chunks to read per sample
@@ -40,24 +42,17 @@ struct Args {
     samples: usize,
 
     /// Optional seed for random number generation (for reproducibility)
-    #[arg(long)]
+    #[arg(
+        long,
+        help = "Seed for RNG (used in --estimate mode for reproducible results)"
+    )]
     seed: Option<u64>,
 }
 
 fn parse_bytes(src: &str) -> Result<usize, String> {
-    let lowercase = src.to_ascii_lowercase();
-    let num_part: String = lowercase.chars().filter(|c| c.is_ascii_digit()).collect();
-    let suffix = lowercase.trim_start_matches(&num_part);
-    let base: usize = num_part.parse().map_err(|_| "Invalid number")?;
-
-    let multiplier = match suffix {
-        "" => 1,
-        "kb" => 1024,
-        "mb" => 1024 * 1024,
-        _ => return Err("Invalid size suffix (use KB, MB)".into()),
-    };
-
-    Ok(base * multiplier)
+    Byte::from_str(src)
+        .map_err(|e| format!("Invalid chunk size: {}", e))
+        .map(|b| b.as_u128() as usize)
 }
 
 fn main() -> Result<()> {

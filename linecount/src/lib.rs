@@ -16,13 +16,12 @@ pub struct EstimateOptions<R: Rng> {
     pub rng: R,
 }
 
-pub fn count_lines_exact(path: &Path) -> Result<u64> {
-    let mut file = File::open(path)?;
+fn count_lines_from_reader<R: Read>(reader: &mut R) -> Result<u64> {
     let mut buffer = [0u8; CHUNK_SIZE];
     let mut count = 0;
 
     loop {
-        let bytes_read = file.read(&mut buffer)?;
+        let bytes_read = reader.read(&mut buffer)?;
         if bytes_read == 0 {
             break;
         }
@@ -30,6 +29,15 @@ pub fn count_lines_exact(path: &Path) -> Result<u64> {
     }
 
     Ok(count)
+}
+
+pub fn count_lines_exact(path: &Path) -> Result<u64> {
+    let mut file = File::open(path)?;
+    count_lines_from_reader(&mut file)
+}
+
+pub fn count_lines_exact_reader<R: Read>(reader: &mut R) -> Result<u64> {
+    count_lines_from_reader(reader)
 }
 
 pub fn count_lines_estimate<R: Rng>(path: &Path, opts: EstimateOptions<R>) -> Result<u64> {
@@ -64,23 +72,10 @@ pub fn count_lines_estimate<R: Rng>(path: &Path, opts: EstimateOptions<R>) -> Re
         }
     }
 
+    // Estimate the average number of bytes per line from the sampled data.
+    // Then extrapolate to estimate total lines in the file.
     let bytes_per_line = n_bytes_read as f64 / newline_count as f64;
     let estimated = (total_bytes as f64 / bytes_per_line).round() as u64;
 
     Ok(estimated)
-}
-
-pub fn count_lines_exact_reader<R: Read>(reader: &mut R) -> Result<u64> {
-    let mut buffer = [0u8; CHUNK_SIZE];
-    let mut count = 0;
-
-    loop {
-        let bytes_read = reader.read(&mut buffer)?;
-        if bytes_read == 0 {
-            break;
-        }
-        count += bytecount::count(&buffer[..bytes_read], b'\n') as u64;
-    }
-
-    Ok(count)
 }
