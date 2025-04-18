@@ -280,6 +280,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
+name = "count-lines"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "byte-unit",
+ "bytecount",
+ "clap",
+ "criterion",
+ "rand",
+ "tempfile",
+]
+
+[[package]]
 name = "criterion"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -497,19 +510,6 @@ name = "libc"
 version = "0.2.172"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d750af042f7ef4f724306de029d18836c26c1765a54a6a3f094cbd23a7267ffa"
-
-[[package]]
-name = "linecount"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "byte-unit",
- "bytecount",
- "clap",
- "criterion",
- "rand",
- "tempfile",
-]
 
 [[package]]
 name = "linux-raw-sys"

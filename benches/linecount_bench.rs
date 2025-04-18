@@ -1,5 +1,5 @@
+use count_lines::{EstimateOptions, count_lines_estimate, count_lines_exact};
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
-use linecount::{EstimateOptions, count_lines_estimate, count_lines_exact};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use std::fs::{File, create_dir_all};

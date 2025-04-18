@@ -1,7 +1,7 @@
 use anyhow::Result;
 use byte_unit::Byte;
 use clap::Parser;
-use linecount::{
+use count_lines::{
     EstimateOptions, SMALL_FILE_THRESHOLD, count_lines_estimate, count_lines_exact,
     count_lines_exact_reader,
 };

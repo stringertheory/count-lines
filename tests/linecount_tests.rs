@@ -1,4 +1,4 @@
-use linecount::{EstimateOptions, count_lines_estimate, count_lines_exact};
+use count_lines::{EstimateOptions, count_lines_estimate, count_lines_exact};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use std::io::{BufWriter, Write};
