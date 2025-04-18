@@ -4,10 +4,10 @@ use linecount::{
     EstimateOptions, SMALL_FILE_THRESHOLD, count_lines_estimate, count_lines_exact,
     count_lines_exact_reader,
 };
-use std::io::{self};
-use std::path::PathBuf;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
+use std::io::{self};
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -38,6 +38,10 @@ struct Args {
     /// Number of samples to take
     #[arg(long, default_value_t = 5)]
     samples: usize,
+
+    /// Optional seed for random number generation (for reproducibility)
+    #[arg(long)]
+    seed: Option<u64>,
 }
 
 fn parse_bytes(src: &str) -> Result<usize, String> {
@@ -89,6 +93,15 @@ fn main() -> Result<()> {
         "estimate"
     };
 
+    // Create the random number generator (RNG)
+    let rng = if let Some(seed) = args.seed {
+        // Use the provided seed for reproducibility
+        StdRng::seed_from_u64(seed)
+    } else {
+        // Use a time-based RNG if no seed is provided
+        StdRng::from_entropy()
+    };
+
     let count = match mode {
         "exact" => count_lines_exact(&path)?,
         "estimate" => {
@@ -96,7 +109,7 @@ fn main() -> Result<()> {
                 chunk_size: args.chunk_size,
                 sample_length: args.sample_length,
                 num_samples: args.samples,
-		rng: StdRng::from_entropy(),
+                rng,
             };
             count_lines_estimate(&path, opts)?
         }
