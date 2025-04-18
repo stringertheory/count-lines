@@ -37,6 +37,28 @@ lc --exact data.csv     # Force exact count
 lc --estimate --seed 17 huge.log
 ```
 
+
+## Benchmarks
+
+```sh
+# Using wc -l as a baseline:
+# Time (mean ± σ):     54.514 s ±  0.420 s
+➜ wc -l bench_data/lines_1g.txt
+1000000000 
+
+# Using lc with exact counting takes
+# Time (mean ± σ):      8.789 s ±  0.062 s
+# 6x speedup over wc -l
+➜ lc --exact bench_data/lines_1g.txt
+1000000000
+
+# Using lc with an estimate of line count takes
+# Time (mean ± σ):      36.3 ms ±   5.4 ms
+# 1500x speedup over wc -l
+➜ lc --estimate bench_data/lines_1g.txt
+1000212321
+```
+
 ## How It Works
 
 ### Exact Method
