@@ -1,6 +1,6 @@
-# linecount
+# count-lines
 
-`linecount` is a command-line tool to count lines in files or standard
+`lc` is a command-line tool to count lines in files or standard
 input, with optional estimation for large files.
 
 ## Features
@@ -9,9 +9,15 @@ input, with optional estimation for large files.
 - Fast performance with chunked reading and sampling
 - Supports seeding RNG for reproducible estimates
 
+## Installation
+
+```sh
+cargo install count-lines
+```
+
 ## Usage
 ```sh
-linecount [OPTIONS] [FILE]
+lc [OPTIONS] [FILE]
 ```
 
 If `FILE` is omitted or set to `-`, the program reads from standard input.
@@ -26,9 +32,9 @@ If `FILE` is omitted or set to `-`, the program reads from standard input.
 
 ### Example
 ```sh
-linecount bigfile.txt          # Automatically uses estimate if file is large
-linecount --exact data.csv     # Force exact count
-linecount --estimate --seed 42 huge.log
+lc bigfile.txt          # Automatically uses estimate if file is large
+lc --exact data.csv     # Force exact count
+lc --estimate --seed 17 huge.log
 ```
 
 ## How It Works
